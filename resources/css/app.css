@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    @keyframes tf-fade-up {
+        from {
+            opacity: 0;
+            transform: translate3d(0, 12px, 0);
+        }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+    @keyframes tf-float {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-6px);
+        }
+    }
+
+    .tf-animate-fade-up {
+        animation: tf-fade-up 700ms ease-out both;
+    }
+
+    .tf-delay-100 {
+        animation-delay: 100ms;
+    }
+
+    .tf-delay-200 {
+        animation-delay: 200ms;
+    }
+
+    .tf-delay-300 {
+        animation-delay: 300ms;
+    }
+
+    .tf-delay-400 {
+        animation-delay: 400ms;
+    }
+
+    .tf-animate-float {
+        animation: tf-float 6s ease-in-out infinite;
+    }
+
+    .tf-hover-lift {
+        transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .tf-hover-lift:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 40px rgba(17, 24, 39, 0.12);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tf-animate-fade-up,
+    .tf-animate-float {
+        animation: none !important;
+    }
+
+    .tf-hover-lift {
+        transition: none !important;
+    }
+}

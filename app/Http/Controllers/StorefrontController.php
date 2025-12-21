@@ -1,0 +1,525 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Mail\OrderConfirmation;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Services\CatalogService;
+use App\Services\MidtransService;
+use App\Services\OrderPresenter;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\View\View;
+
+class StorefrontController extends Controller
+{
+    public function products(Request $request, CatalogService $catalog): View
+    {
+        $kategori = (string) $request->query('kategori', 'semua');
+        $sort = (string) $request->query('sort', 'populer');
+
+        return view('storefront.products', [
+            'products' => $catalog->filterAndSort($kategori, $sort),
+            'kategori' => $kategori,
+            'sort' => $sort,
+        ]);
+    }
+
+    public function track(Request $request, OrderPresenter $presenter): View
+    {
+        $orderCode = (string) $request->query('order_code', '');
+        $order = null;
+        $canPay = false;
+        $isOwner = false;
+        $notFound = false;
+
+        if ($orderCode !== '') {
+            $found = Order::query()
+                ->with('items')
+                ->where('code', $orderCode)
+                ->first();
+
+            if ($found) {
+                $order = $presenter->orderToPayload($found);
+                $isOwner = Auth::check() && (int) ($found->user_id ?? 0) === (int) Auth::id();
+                $canPay = $isOwner && (string) ($found->status ?? '') === 'Menunggu Pembayaran';
+            }
+
+            $notFound = ($found === null);
+        }
+
+        return view('storefront.track', [
+            'order_code' => $orderCode,
+            'order' => $order,
+            'can_pay' => $canPay,
+            'is_owner' => $isOwner,
+            'order_not_found' => $notFound,
+        ]);
+    }
+
+    public function myOrders(): View|RedirectResponse
+    {
+        if (!Auth::check()) {
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        $orders = Order::query()
+            ->with('items')
+            ->where('user_id', (int) Auth::id())
+            ->latest()
+            ->paginate(10);
+
+        return view('storefront.my-orders', [
+            'orders' => $orders,
+        ]);
+    }
+
+    public function cart(CatalogService $catalog): View|RedirectResponse
+    {
+        if (!Auth::check()) {
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        $cart = (array) session()->get('cart', []);
+        $all = $catalog->keyById();
+
+        $items = [];
+        $total = 0;
+
+        $formatRupiah = fn (int $amount) => 'Rp '.number_format($amount, 0, ',', '.');
+
+        foreach ($cart as $productId => $qty) {
+            $p = $all[(int) $productId] ?? null;
+            if (!$p) {
+                continue;
+            }
+
+            $qty = max(1, (int) $qty);
+            $price = (int) ($p['price'] ?? 0);
+            $subtotal = $price * $qty;
+            $total += $subtotal;
+
+            $items[] = [
+                'id' => (int) ($p['id'] ?? 0),
+                'title' => (string) ($p['title'] ?? ''),
+                'tag' => (string) ($p['tag'] ?? ''),
+                'img' => (string) ($p['img'] ?? ''),
+                'qty' => $qty,
+                'price' => $price,
+                'price_formatted' => $formatRupiah($price),
+                'subtotal' => $subtotal,
+                'subtotal_formatted' => $formatRupiah($subtotal),
+            ];
+        }
+
+        return view('storefront.cart', [
+            'items' => $items,
+            'total' => $total,
+            'total_formatted' => $formatRupiah($total),
+        ]);
+    }
+
+    public function cartAdd(Request $request, CatalogService $catalog): JsonResponse|RedirectResponse
+    {
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Login diperlukan',
+                    'reason' => 'login-required',
+                ], 401);
+            }
+
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        $request->validate([
+            'product_id' => ['required', 'integer'],
+        ]);
+
+        $productId = (int) $request->input('product_id');
+        $exists = $catalog->find($productId);
+        if (!$exists) {
+            abort(404);
+        }
+
+        $cart = (array) session()->get('cart', []);
+        $cart[$productId] = ($cart[$productId] ?? 0) + 1;
+        session()->put('cart', $cart);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Berhasil ditambahkan ke keranjang',
+                'cart_count' => array_sum($cart),
+            ]);
+        }
+
+        return redirect()->route('storefront.cart');
+    }
+
+    public function cartUpdate(Request $request, CatalogService $catalog, OrderPresenter $presenter): JsonResponse|RedirectResponse
+    {
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Login diperlukan',
+                    'reason' => 'login-required',
+                ], 401);
+            }
+
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        $request->validate([
+            'product_id' => ['required', 'integer'],
+            'qty' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $productId = (int) $request->input('product_id');
+        $qty = (int) $request->input('qty');
+
+        $cart = (array) session()->get('cart', []);
+        if (!array_key_exists($productId, $cart)) {
+            return back();
+        }
+
+        $cart[$productId] = $qty;
+        session()->put('cart', $cart);
+
+        if ($request->expectsJson()) {
+            $all = $catalog->keyById();
+            $p = $all[$productId] ?? null;
+            $price = (int) ($p['price'] ?? 0);
+            $itemSubtotal = $price * $qty;
+
+            return response()->json(array_merge([
+                'updated_id' => $productId,
+                'qty' => $qty,
+                'item_subtotal' => $itemSubtotal,
+                'item_subtotal_formatted' => ('Rp '.number_format($itemSubtotal, 0, ',', '.')),
+            ], $presenter->computeCartTotals($cart, $all)));
+        }
+
+        return back();
+    }
+
+    public function cartRemove(Request $request, CatalogService $catalog, OrderPresenter $presenter): JsonResponse|RedirectResponse
+    {
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Login diperlukan',
+                    'reason' => 'login-required',
+                ], 401);
+            }
+
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        $request->validate([
+            'product_id' => ['required', 'integer'],
+        ]);
+
+        $productId = (int) $request->input('product_id');
+        $cart = (array) session()->get('cart', []);
+        unset($cart[$productId]);
+        session()->put('cart', $cart);
+
+        if ($request->expectsJson()) {
+            return response()->json(array_merge([
+                'removed_id' => $productId,
+            ], $presenter->computeCartTotals($cart, $catalog->keyById())));
+        }
+
+        return back();
+    }
+
+    public function checkout(Request $request, CatalogService $catalog, OrderPresenter $presenter): JsonResponse|RedirectResponse
+    {
+        if (!Auth::check()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Login diperlukan',
+                    'reason' => 'login-required',
+                ], 401);
+            }
+
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        $request->validate([
+            'recipient_name' => ['required', 'string', 'max:120'],
+            'recipient_phone' => ['required', 'string', 'max:30'],
+            'shipping_address' => ['required', 'string', 'max:500'],
+            'shipping_city' => ['required', 'string', 'max:120'],
+            'shipping_postal_code' => ['nullable', 'string', 'max:20'],
+            'shipping_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $cart = (array) session()->get('cart', []);
+        if (count($cart) === 0) {
+            return redirect()->route('storefront.cart');
+        }
+
+        $all = $catalog->keyById();
+        $items = [];
+
+        foreach ($cart as $productId => $qty) {
+            $p = $all[(int) $productId] ?? null;
+            if (!$p) {
+                continue;
+            }
+
+            $qty = max(1, (int) $qty);
+            $price = (int) ($p['price'] ?? 0);
+            $items[] = [
+                'id' => (int) ($p['id'] ?? 0),
+                'title' => (string) ($p['title'] ?? ''),
+                'tag' => (string) ($p['tag'] ?? ''),
+                'qty' => $qty,
+                'price' => $price,
+                'subtotal' => $price * $qty,
+            ];
+        }
+
+        $totals = $presenter->computeCartTotals($cart, $all);
+
+        do {
+            $code = 'TF-'.strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+        } while (Order::query()->where('code', $code)->exists());
+
+        $order = Order::query()->create([
+            'code' => $code,
+            'user_id' => (int) Auth::id(),
+            'recipient_name' => trim((string) $request->input('recipient_name')),
+            'recipient_phone' => trim((string) $request->input('recipient_phone')),
+            'shipping_address' => trim((string) $request->input('shipping_address')),
+            'shipping_city' => trim((string) $request->input('shipping_city')),
+            'shipping_postal_code' => trim((string) $request->input('shipping_postal_code', '')),
+            'shipping_note' => trim((string) $request->input('shipping_note', '')),
+            'status' => 'Menunggu Pembayaran',
+            'subtotal' => (int) ($totals['total'] ?? 0),
+            'discount' => 0,
+            'grand_total' => (int) ($totals['total'] ?? 0),
+            'payment_provider' => 'midtrans',
+            'payment_status' => 'pending',
+        ]);
+
+        foreach ($items as $it) {
+            OrderItem::query()->create([
+                'order_id' => (int) $order->id,
+                'product_id' => (int) ($it['id'] ?? 0),
+                'product_title' => (string) ($it['title'] ?? ''),
+                'product_tag' => (string) ($it['tag'] ?? ''),
+                'price' => (int) ($it['price'] ?? 0),
+                'qty' => (int) ($it['qty'] ?? 1),
+                'subtotal' => (int) ($it['subtotal'] ?? 0),
+            ]);
+        }
+
+        session()->forget('cart');
+
+        // Email will be sent after payment is successful (handled by MidtransWebhookController)
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'order_code' => $code,
+                'cart_count' => 0,
+                'redirect' => route('storefront.pay', ['code' => $code]),
+            ]);
+        }
+
+        return redirect()->route('storefront.pay', ['code' => $code]);
+    }
+
+    public function pay(string $code, MidtransService $midtrans, OrderPresenter $presenter): View|RedirectResponse
+    {
+        if (!Auth::check()) {
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        $order = Order::query()
+            ->with(['user', 'items'])
+            ->where('code', $code)
+            ->where('user_id', (int) Auth::id())
+            ->first();
+
+        if (!$order) {
+            return redirect()->route('storefront.my-orders');
+        }
+
+        if ((string) $order->status !== 'Menunggu Pembayaran') {
+            return redirect()->route('storefront.checkout.success', ['code' => $code]);
+        }
+
+        $cfg = (array) config('services.midtrans', []);
+        $clientKey = (string) ($cfg['client_key'] ?? '');
+        $isProduction = (bool) ($cfg['is_production'] ?? false);
+
+        $formatRupiah = fn (int $amount) => $presenter->formatRupiah($amount);
+
+        if ($clientKey === '') {
+            return view('storefront.payment', [
+                'order' => $order,
+                'snap_token' => null,
+                'snap_js_url' => null,
+                'client_key' => null,
+                'success_url' => route('storefront.checkout.success', ['code' => $order->code]),
+                'format_rupiah' => $formatRupiah,
+                'payment_error' => 'MIDTRANS_CLIENT_KEY belum diatur.',
+            ]);
+        }
+
+        $snapJsUrl = $midtrans->snapJsUrl($isProduction);
+
+        $paymentError = null;
+        $snapToken = (string) ($order->snap_token ?? '');
+
+        if ($snapToken === '') {
+            try {
+                $snapToken = $midtrans->createSnapToken($order);
+                $order->update([
+                    'payment_provider' => 'midtrans',
+                    'payment_status' => 'pending',
+                    'snap_token' => $snapToken,
+                ]);
+            } catch (\Throwable $e) {
+                $paymentError = $e->getMessage();
+            }
+        }
+
+        return view('storefront.payment', [
+            'order' => $order,
+            'snap_token' => ($snapToken !== '' ? $snapToken : null),
+            'snap_js_url' => $snapJsUrl,
+            'client_key' => $clientKey,
+            'success_url' => route('storefront.checkout.success', ['code' => $order->code]),
+            'format_rupiah' => $formatRupiah,
+            'payment_error' => $paymentError,
+        ]);
+    }
+
+    public function checkoutSuccess(string $code, OrderPresenter $presenter, MidtransService $midtrans): View|RedirectResponse
+    {
+        if (!Auth::check()) {
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        $found = Order::query()
+            ->with('items')
+            ->where('code', $code)
+            ->where('user_id', (int) Auth::id())
+            ->first();
+
+        if (!$found) {
+            return redirect()->route('storefront.track', ['order_code' => $code]);
+        }
+
+        $previousStatus = $found->status;
+
+        if ((string) ($found->payment_provider ?? '') === 'midtrans' && (string) ($found->payment_status ?? '') !== 'paid') {
+            try {
+                $midtrans->syncOrderFromTransactionStatus($found);
+                $found->refresh();
+            } catch (\Throwable $e) {
+                Log::warning('midtrans.status.sync.checkout_success.failed', [
+                    'order_id' => (string) $found->code,
+                    'exception' => get_class($e),
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Send confirmation email after successful payment (status changed from Menunggu Pembayaran to Dikemas)
+        if ($found->status === 'Dikemas' && $previousStatus === 'Menunggu Pembayaran') {
+            try {
+                $found->loadMissing(['user', 'items']);
+                if ($found->user && $found->user->email && !$found->confirmation_email_sent) {
+                    Mail::to($found->user->email)->send(new OrderConfirmation($found));
+                    $found->update(['confirmation_email_sent' => true]);
+                    Log::info('checkout_success.email_sent', [
+                        'order_code' => $found->code,
+                        'email' => $found->user->email,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('checkout_success.email_failed', [
+                    'order_code' => $found->code,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return view('storefront.checkout-success', [
+            'order' => $presenter->orderToPayload($found),
+        ]);
+    }
+
+    public function checkoutStatus(string $code, MidtransService $midtrans): JsonResponse
+    {
+        $userId = (int) Auth::id();
+
+        $order = Order::query()
+            ->where('code', $code)
+            ->where('user_id', $userId)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order not found',
+            ], 404);
+        }
+
+        if ((string) ($order->payment_provider ?? '') === 'midtrans' && (string) ($order->payment_status ?? '') !== 'paid') {
+            try {
+                $midtrans->syncOrderFromTransactionStatus($order);
+                $order->refresh();
+            } catch (\Throwable $e) {
+                Log::warning('midtrans.status.sync.poll.failed', [
+                    'order_id' => (string) $order->code,
+                    'exception' => get_class($e),
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $paidAt = $order->paid_at;
+
+        return response()->json([
+            'code' => (string) $order->code,
+            'status' => (string) $order->status,
+            'payment_status' => (string) ($order->payment_status ?? ''),
+            'paid_at' => $paidAt ? (is_string($paidAt) ? $paidAt : $paidAt->toDateTimeString()) : null,
+        ]);
+    }
+
+    public function cancelOrder(Request $request, Order $order): RedirectResponse
+    {
+        if (!Auth::check()) {
+            return redirect()->route('home')->with('tf_toast', 'login-required');
+        }
+
+        // Verify the order belongs to the current user
+        if ((int) $order->user_id !== (int) Auth::id()) {
+            return redirect()->route('storefront.my-orders')->with('tf_toast', 'unauthorized');
+        }
+
+        // Only allow cancellation for "Menunggu Pembayaran" status
+        $status = (string) ($order->status ?? '');
+
+        if ($status !== 'Menunggu Pembayaran') {
+            return redirect()->route('storefront.my-orders')->with('tf_toast', 'cancel-not-allowed');
+        }
+
+        // Update order status to cancelled
+        $order->update([
+            'status' => 'Dibatalkan',
+        ]);
+
+        return redirect()->route('storefront.my-orders')->with('tf_toast', 'order-cancelled');
+    }
+}
