@@ -1,59 +1,257 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/images/tempe_hero.png" width="400" alt="TempeFlow Logo">
 </p>
 
-## About Laravel
+<h1 align="center">🌿 TempeFlow</h1>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  <strong>Platform E-Commerce Modern untuk Tempe Jaya Mandiri</strong>
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel">
+  <img src="https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Vite-6.x-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Midtrans-Payment-00D4AA?style=for-the-badge&logo=stripe&logoColor=white" alt="Midtrans">
+</p>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP">
+  <img src="https://img.shields.io/badge/MySQL-Database-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
+</p>
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 📋 Tentang Proyek
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**TempeFlow** adalah platform e-commerce modern yang dikembangkan untuk **Tempe Jaya Mandiri**, sebuah UMKM yang memproduksi tempe berkualitas tinggi. Platform ini dirancang untuk memudahkan pelanggan dalam memesan berbagai varian tempe secara online dengan pengalaman belanja yang seamless.
 
-## Laravel Sponsors
+### 🎯 Tujuan
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+-   Memperluas jangkauan pasar produk tempe berkualitas
+-   Memberikan kemudahan pemesanan online bagi pelanggan
+-   Menyediakan dashboard admin untuk manajemen produk dan pesanan
+-   Mengintegrasikan sistem pembayaran online yang aman
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## ✨ Fitur Utama
 
-## Contributing
+### 👥 Untuk Pelanggan
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Fitur                    | Deskripsi                                           |
+| ------------------------ | --------------------------------------------------- |
+| 🏪 **Landing Page**      | Halaman utama yang menarik dengan informasi produk  |
+| 📦 **Katalog Produk**    | Tampilan produk dengan kategori dan filter          |
+| 🛒 **Keranjang Belanja** | Kelola item sebelum checkout                        |
+| 💳 **Pembayaran Online** | Integrasi Midtrans untuk berbagai metode pembayaran |
+| 📍 **Tracking Pesanan**  | Lacak status pesanan secara real-time               |
+| 📜 **Riwayat Pesanan**   | Lihat semua pesanan yang pernah dilakukan           |
 
-## Code of Conduct
+### 🔧 Untuk Admin
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Fitur                      | Deskripsi                               |
+| -------------------------- | --------------------------------------- |
+| 📊 **Dashboard Analytics** | Statistik penjualan dan performa bisnis |
+| 📦 **Manajemen Produk**    | CRUD produk dengan upload gambar        |
+| 📋 **Manajemen Pesanan**   | Kelola dan update status pesanan        |
+| 👤 **Manajemen User**      | Kelola akun pelanggan                   |
+| 📄 **Laporan PDF**         | Generate laporan penjualan              |
+| 🧾 **Invoice**             | Cetak invoice untuk setiap transaksi    |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🏗️ Tech Stack
 
-## License
+```
+┌─────────────────────────────────────────────────────────┐
+│                     FRONTEND                             │
+├─────────────────────────────────────────────────────────┤
+│  🎨 Blade Templates   │  🌊 TailwindCSS  │  ⚡ Vite     │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│                     BACKEND                              │
+├─────────────────────────────────────────────────────────┤
+│  🔥 Laravel 12        │  🔐 Laravel Breeze (Auth)       │
+│  📄 DomPDF            │  💰 Midtrans Payment Gateway    │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│                     DATABASE                             │
+├─────────────────────────────────────────────────────────┤
+│  🗄️ MySQL / SQLite                                      │
+└─────────────────────────────────────────────────────────┘
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 📁 Struktur Proyek
+
+```
+tempeflow/
+├── 📂 app/
+│   ├── Http/Controllers/
+│   │   ├── Admin/           # Controller untuk admin dashboard
+│   │   ├── Auth/            # Controller autentikasi
+│   │   ├── StorefrontController.php
+│   │   └── MidtransWebhookController.php
+│   └── Models/              # Eloquent Models
+├── 📂 database/
+│   ├── migrations/          # Database migrations
+│   └── seeders/             # Data seeders
+├── 📂 public/
+│   └── images/              # Assets gambar produk
+├── 📂 resources/
+│   └── views/
+│       ├── admin/           # Views admin panel
+│       ├── storefront/      # Views customer-facing
+│       └── layouts/         # Layout templates
+├── 📂 routes/
+│   └── web.php              # Web routes
+└── 📂 config/               # Konfigurasi aplikasi
+```
+
+---
+
+## 🚀 Instalasi & Setup
+
+### Prasyarat
+
+-   PHP >= 8.2
+-   Composer
+-   Node.js >= 18
+-   MySQL / SQLite
+
+### Langkah Instalasi
+
+```bash
+# 1. Clone repository
+git clone https://github.com/mriya23/tempeflow.git
+cd tempeflow
+
+# 2. Install dependencies PHP
+composer install
+
+# 3. Install dependencies Node.js
+npm install
+
+# 4. Salin file environment
+cp .env.example .env
+
+# 5. Generate application key
+php artisan key:generate
+
+# 6. Konfigurasi database di .env
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=tempeflow
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# 7. Jalankan migrasi database
+php artisan migrate
+
+# 8. (Opsional) Jalankan seeder
+php artisan db:seed
+
+# 9. Build assets
+npm run build
+
+# 10. Jalankan development server
+php artisan serve
+```
+
+### 🔧 Konfigurasi Midtrans
+
+Tambahkan konfigurasi berikut di file `.env`:
+
+```env
+MIDTRANS_SERVER_KEY=your_server_key
+MIDTRANS_CLIENT_KEY=your_client_key
+MIDTRANS_IS_PRODUCTION=false
+```
+
+---
+
+## 📸 Screenshot
+
+<details>
+<summary>🖥️ Lihat Screenshot</summary>
+
+### Landing Page
+
+> Halaman utama dengan hero section dan katalog produk
+
+### Katalog Produk
+
+> Tampilan grid produk dengan filter kategori
+
+### Keranjang & Checkout
+
+> Proses pembelian yang seamless
+
+### Admin Dashboard
+
+> Panel administrasi dengan analytics
+
+</details>
+
+---
+
+## 🛣️ Roadmap
+
+-   [x] Landing page dengan katalog produk
+-   [x] Sistem keranjang belanja
+-   [x] Integrasi pembayaran Midtrans
+-   [x] Tracking pesanan
+-   [x] Admin dashboard
+-   [x] Generate laporan PDF
+-   [ ] Notifikasi WhatsApp
+-   [ ] Mobile app (Flutter)
+-   [ ] Multi-vendor support
+
+---
+
+## 🤝 Kontribusi
+
+Kontribusi sangat diterima! Silakan:
+
+1. Fork repository ini
+2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
+3. Commit perubahan (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buat Pull Request
+
+---
+
+## 📄 Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
+
+---
+
+## 👨‍💻 Tim Pengembang
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Tempe Jaya Mandiri Team</strong><br>
+      <sub>Development</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
+<p align="center">
+  <strong>Dibuat dengan ❤️ untuk UMKM Indonesia</strong>
+</p>
+
+<p align="center">
+  <a href="#-tempeflow">⬆️ Kembali ke Atas</a>
+</p>
