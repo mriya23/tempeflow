@@ -686,6 +686,22 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <div class="p-4 bg-white rounded-lg border border-gray-200 mt-4">
+                                                <h5 class="text-sm font-semibold text-gray-900 mb-3">Update Status Pesanan</h5>
+                                                <form method="POST" action="{{ route('admin.orders.updateStatus', ['order' => $o->id]) }}" class="space-y-3">
+                                                    @csrf
+                                                    <div>
+                                                        <label class="text-xs text-gray-500">Status</label>
+                                                        <select name="status" class="admin-input w-full h-10 text-sm">
+                                                            @foreach (['Menunggu Pembayaran','Dikemas','Dikirim','Selesai','Dibatalkan'] as $st)
+                                                                <option value="{{ $st }}" {{ $o->status === $st ? 'selected' : '' }}>{{ $st }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <button type="submit" class="admin-btn admin-btn-primary w-full h-10">Simpan Perubahan</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -743,89 +759,213 @@
                                             <span class="status-badge {{ $statusClasses[$o->status] ?? 'bg-gray-100 text-gray-700' }}">{{ $o->status }}</span>
                                         </td>
                                         <td class="px-4 py-4 align-top" style="width: 280px;">
-                                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                                <button type="button" class="admin-btn admin-btn-secondary" style="height: 32px; padding: 0 10px; font-size: 11px;" @click="openId = (openId === {{ $o->id }} ? null : {{ $o->id }})">
-                                                    Detail
+                                            <div class="flex items-center gap-2">
+                                                {{-- Detail Button --}}
+                                                <button 
+                                                    type="button" 
+                                                    @click="openId = (openId === {{ $o->id }} ? null : {{ $o->id }})"
+                                                    class="inline-flex items-center h-8 px-3 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all duration-150"
+                                                >
+                                                    <svg class="w-3.5 h-3.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                    </svg>
+                                                    <span>Detail</span>
                                                 </button>
-                                                <a href="{{ route('admin.orders.invoice', $o) }}" class="admin-btn admin-btn-secondary" style="height: 32px; padding: 0 10px; font-size: 11px; text-decoration: none;" title="Download Invoice">
-                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+
+                                                {{-- Invoice Button --}}
+                                                <a 
+                                                    href="{{ route('admin.orders.invoice', $o) }}" 
+                                                    class="inline-flex items-center justify-center h-8 w-8 text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 hover:text-slate-700 transition-all duration-150"
+                                                    title="Download Invoice"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
                                                 </a>
+
                                                 @if ($o->status !== 'Dibatalkan' && $o->status !== 'Selesai')
-                                                    <form method="POST" action="{{ route('admin.orders.updateStatus', ['order' => $o->id]) }}" style="margin: 0;">
-                                                        @csrf
-                                                        <select name="status" onchange="this.form.submit()" style="height: 32px; padding: 0 8px; font-size: 11px; min-width: 90px; border: 1px solid #E5E7EB; border-radius: 8px; background: #fff;">
+                                                    {{-- Status Dropdown with Visual Stepper --}}
+                                                    <div x-data="{ statusOpen: false }" class="relative">
+                                                        <button 
+                                                            type="button"
+                                                            @click="statusOpen = !statusOpen"
+                                                            @click.away="statusOpen = false"
+                                                            class="inline-flex items-center gap-2 h-8 px-3 text-xs font-semibold rounded-lg transition-all duration-150
+                                                                {{ $o->status === 'Menunggu Pembayaran' ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' : '' }}
+                                                                {{ $o->status === 'Dikemas' ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100' : '' }}
+                                                                {{ $o->status === 'Dikirim' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100' : '' }}
+                                                            "
+                                                        >
                                                             @if ($o->status === 'Menunggu Pembayaran')
-                                                                <option value="Menunggu Pembayaran" selected disabled>Menunggu</option>
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                            @elseif ($o->status === 'Dikemas')
+                                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                                                            @elseif ($o->status === 'Dikirim')
+                                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
                                                             @endif
-                                                            @foreach (['Dikemas','Dikirim','Selesai'] as $st)
-                                                                <option value="{{ $st }}" {{ $o->status === $st ? 'selected' : '' }}>{{ $st }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </form>
-                                                    <form method="POST" action="{{ route('admin.orders.updateStatus', ['order' => $o->id]) }}" style="margin: 0;" onsubmit="return confirm('Yakin ingin membatalkan pesanan {{ $o->code }}?');">
-                                                        @csrf
-                                                        <input type="hidden" name="status" value="Dibatalkan">
-                                                        <button type="submit" class="admin-btn admin-btn-danger" style="height: 32px; padding: 0 12px; font-size: 11px;">
-                                                            Batalkan
+                                                            <span>{{ $o->status === 'Menunggu Pembayaran' ? 'Menunggu' : $o->status }}</span>
+                                                            <svg class="w-3 h-3 transition-transform duration-150" :class="statusOpen && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7" /></svg>
                                                         </button>
-                                                    </form>
+
+                                                        {{-- Dropdown Menu --}}
+                                                        <div 
+                                                            x-show="statusOpen" 
+                                                            x-transition:enter="transition ease-out duration-100"
+                                                            x-transition:enter-start="opacity-0 scale-95"
+                                                            x-transition:enter-end="opacity-100 scale-100"
+                                                            x-transition:leave="transition ease-in duration-75"
+                                                            x-transition:leave-start="opacity-100 scale-100"
+                                                            x-transition:leave-end="opacity-0 scale-95"
+                                                            class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden"
+                                                            x-cloak
+                                                        >
+                                                            <div class="px-3 py-2 bg-slate-50 border-b border-slate-100">
+                                                                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Ubah Status Pesanan</p>
+                                                            </div>
+                                                            <div class="p-1.5">
+                                                                {{-- Dikemas --}}
+                                                                <form method="POST" action="{{ route('admin.orders.updateStatus', ['order' => $o->id]) }}" style="margin: 0;">
+                                                                    @csrf
+                                                                    <input type="hidden" name="status" value="Dikemas">
+                                                                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors {{ $o->status === 'Dikemas' ? 'bg-blue-50 text-blue-700' : 'hover:bg-slate-50 text-slate-700' }}" {{ $o->status === 'Dikemas' ? 'disabled' : '' }}>
+                                                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                                                                        <span class="text-xs font-medium">Dikemas {{ $o->status === 'Dikemas' ? '(Saat ini)' : '' }}</span>
+                                                                    </button>
+                                                                </form>
+
+                                                                {{-- Dikirim --}}
+                                                                <form method="POST" action="{{ route('admin.orders.updateStatus', ['order' => $o->id]) }}" style="margin: 0;">
+                                                                    @csrf
+                                                                    <input type="hidden" name="status" value="Dikirim">
+                                                                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors {{ $o->status === 'Dikirim' ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-slate-50 text-slate-700' }}" {{ $o->status === 'Dikirim' ? 'disabled' : '' }}>
+                                                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
+                                                                        <span class="text-xs font-medium">Dikirim {{ $o->status === 'Dikirim' ? '(Saat ini)' : '' }}</span>
+                                                                    </button>
+                                                                </form>
+
+                                                                {{-- Selesai --}}
+                                                                <form method="POST" action="{{ route('admin.orders.updateStatus', ['order' => $o->id]) }}" style="margin: 0;">
+                                                                    @csrf
+                                                                    <input type="hidden" name="status" value="Selesai">
+                                                                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors hover:bg-emerald-50 text-slate-700 hover:text-emerald-700">
+                                                                        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                                        <span class="text-xs font-medium">Selesai</span>
+                                                                    </button>
+                                                                </form>
+
+                                                                <div class="border-t border-slate-100 mt-1 pt-1">
+                                                                    {{-- Batalkan --}}
+                                                                    <form method="POST" action="{{ route('admin.orders.updateStatus', ['order' => $o->id]) }}" style="margin: 0;" onsubmit="return confirm('Yakin ingin membatalkan pesanan {{ $o->code }}?');">
+                                                                        @csrf
+                                                                        <input type="hidden" name="status" value="Dibatalkan">
+                                                                        <button type="submit" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors hover:bg-red-50 text-red-600">
+                                                                            <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12" /></svg>
+                                                                            <span class="text-xs font-medium">Batalkan</span>
+                                                                        </button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 @else
-                                                    <span style="font-size: 11px; color: #9CA3AF; padding: 0 8px;">{{ $o->status === 'Dibatalkan' ? 'Dibatalkan' : 'Selesai' }}</span>
+                                                    {{-- Completed/Cancelled Status Badge --}}
+                                                    <span class="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-semibold rounded-lg
+                                                        {{ $o->status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200' }}
+                                                    ">
+                                                        @if ($o->status === 'Selesai')
+                                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7" /></svg>
+                                                        @else
+                                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12" /></svg>
+                                                        @endif
+                                                        {{ $o->status }}
+                                                    </span>
                                                 @endif
                                             </div>
                                         </td>
                                     </tr>
 
                                     <tr x-show="openId === {{ $o->id }}" x-cloak>
-                                        <td colspan="6" class="!p-0 !border-0">
-                                            <div class="m-4 p-4 rounded-xl bg-gray-50 border border-gray-200">
-                                                <div class="flex items-center justify-between mb-4">
-                                                    <h4 class="font-semibold text-gray-900">Detail Pesanan {{ $o->code }}</h4>
-                                                    <button type="button" @click="openId = null" class="text-gray-400 hover:text-gray-600">
-                                                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <td colspan="6" style="padding: 0; border: none;">
+                                            <div style="margin: 16px; padding: 24px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
+                                                {{-- Header --}}
+                                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+                                                    <h4 style="font-size: 16px; font-weight: 600; color: #1e293b; margin: 0;">Detail Pesanan {{ $o->code }}</h4>
+                                                    <button type="button" @click="openId = null" style="padding: 8px; border-radius: 8px; background: transparent; border: none; cursor: pointer; color: #94a3b8;">
+                                                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                             <path d="M6 18L18 6M6 6l12 12" />
                                                         </svg>
                                                     </button>
                                                 </div>
 
-                                                <div class="grid md:grid-cols-2 gap-4">
-                                                    <div class="space-y-2">
-                                                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Item Pesanan</p>
-                                                        @foreach ($o->items as $it)
-                                                            <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                                                                <div>
-                                                                    <p class="font-medium text-gray-900 text-sm">{{ $it->product_title }}</p>
-                                                                    <p class="text-xs text-gray-500">{{ $formatRupiah((int) $it->price) }} × {{ $it->qty }}</p>
+                                                {{-- Content Grid --}}
+                                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+                                                    
+                                                    {{-- Column 1: Item Pesanan --}}
+                                                    <div style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px;">
+                                                        <p style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px 0;">Item Pesanan</p>
+                                                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                                                            @foreach ($o->items as $it)
+                                                                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 12px; background: #f8fafc; border-radius: 8px;">
+                                                                    <div style="flex: 1; min-width: 0;">
+                                                                        <p style="font-size: 14px; font-weight: 500; color: #1e293b; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $it->product_title }}</p>
+                                                                        <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">{{ $formatRupiah((int) $it->price) }} × {{ $it->qty }}</p>
+                                                                    </div>
+                                                                    <p style="font-size: 14px; font-weight: 600; color: #1e293b; margin: 0; margin-left: 12px; white-space: nowrap;">{{ $formatRupiah((int) $it->subtotal) }}</p>
                                                                 </div>
-                                                                <p class="font-semibold text-gray-900 text-sm">{{ $formatRupiah((int) $it->subtotal) }}</p>
-                                                            </div>
-                                                        @endforeach
+                                                            @endforeach
+                                                        </div>
                                                     </div>
 
-                                                    <div class="space-y-4">
+                                                    {{-- Column 2: Alamat Pengiriman --}}
+                                                    <div style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px;">
+                                                        <p style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px 0;">Alamat Pengiriman</p>
                                                         <div>
-                                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Alamat Pengiriman</p>
-                                                            <div class="p-3 bg-white rounded-lg border border-gray-200 text-sm">
-                                                                <p class="font-medium text-gray-900">{{ $o->recipient_name ?? '-' }}</p>
-                                                                <p class="text-gray-600">{{ $o->recipient_phone ?? '-' }}</p>
-                                                                <p class="text-gray-600 mt-1">{{ $o->shipping_address ?? '-' }}</p>
-                                                                <p class="text-gray-600">{{ $o->shipping_city ?? '-' }} {{ $o->shipping_postal_code ?? '' }}</p>
+                                                            <p style="font-size: 15px; font-weight: 600; color: #1e293b; margin: 0;">{{ $o->recipient_name ?? '-' }}</p>
+                                                            <p style="font-size: 14px; color: #475569; margin: 6px 0 0 0;">{{ $o->recipient_phone ?? '-' }}</p>
+                                                        </div>
+                                                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+                                                            <p style="font-size: 14px; color: #475569; margin: 0; line-height: 1.5;">{{ $o->shipping_address ?? '-' }}</p>
+                                                            <p style="font-size: 14px; color: #475569; margin: 4px 0 0 0;">{{ $o->shipping_city ?? '-' }} {{ $o->shipping_postal_code ?? '' }}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Column 3: Ringkasan & Status --}}
+                                                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                                                        {{-- Ringkasan Pembayaran --}}
+                                                        <div style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px;">
+                                                            <p style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 16px 0;">Ringkasan</p>
+                                                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                                                <span style="font-size: 14px; color: #64748b;">Subtotal</span>
+                                                                <span style="font-size: 14px; font-weight: 500; color: #334155;">{{ $formatRupiah((int) $o->subtotal) }}</span>
+                                                            </div>
+                                                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                                                <span style="font-size: 14px; color: #64748b;">Ongkir</span>
+                                                                <span style="font-size: 14px; font-weight: 500; color: #334155;">{{ $o->shipping_cost > 0 ? $formatRupiah((int) $o->shipping_cost) : 'Gratis' }}</span>
+                                                            </div>
+                                                            <div style="display: flex; justify-content: space-between; padding-top: 12px; margin-top: 12px; border-top: 1px solid #e2e8f0;">
+                                                                <span style="font-size: 15px; font-weight: 600; color: #1e293b;">Grand Total</span>
+                                                                <span style="font-size: 15px; font-weight: 700; color: #1e293b;">{{ $formatRupiah((int) $o->grand_total) }}</span>
                                                             </div>
                                                         </div>
 
-                                                        <div style="margin-top: 16px;">
-                                                            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Ringkasan</p>
-                                                            <div class="p-3 bg-white rounded-lg border border-gray-200">
-                                                                <div class="flex justify-between text-sm mb-2">
-                                                                    <span class="text-gray-500">Subtotal</span>
-                                                                    <span class="font-medium">{{ $formatRupiah((int) $o->subtotal) }}</span>
-                                                                </div>
-                                                                <div class="flex justify-between text-sm pt-2 border-t border-gray-200">
-                                                                    <span class="font-medium text-gray-900">Grand Total</span>
-                                                                    <span class="font-bold text-gray-900">{{ $formatRupiah((int) $o->grand_total) }}</span>
-                                                                </div>
-                                                            </div>
+                                                        {{-- Status --}}
+                                                        <div style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 16px;">
+                                                            <p style="font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px 0;">Status Pesanan</p>
+                                                            @php
+                                                                $statusStyles = [
+                                                                    'Menunggu Pembayaran' => 'background: #fef3c7; color: #b45309;',
+                                                                    'Dikemas' => 'background: #dbeafe; color: #1d4ed8;',
+                                                                    'Dikirim' => 'background: #e0e7ff; color: #4338ca;',
+                                                                    'Selesai' => 'background: #d1fae5; color: #047857;',
+                                                                    'Dibatalkan' => 'background: #fee2e2; color: #dc2626;',
+                                                                ];
+                                                            @endphp
+                                                            <span style="display: inline-block; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: 20px; {{ $statusStyles[$o->status] ?? 'background: #f1f5f9; color: #475569;' }}">
+                                                                {{ $o->status }}
+                                                            </span>
                                                         </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>

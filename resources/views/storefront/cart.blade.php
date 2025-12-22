@@ -17,10 +17,28 @@
                     </div>
                     <h1 class="mt-5 text-2xl font-bold tracking-tight text-slate-900">Keranjang kamu masih kosong</h1>
                     <p class="mt-2 text-sm text-slate-600">Mulai belanja dulu, nanti produk pilihanmu akan muncul di sini.</p>
-                    <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-                        <a href="{{ route('storefront.products') }}" class="inline-flex items-center justify-center h-11 px-6 rounded-2xl bg-[#556B55] text-white font-semibold">Lihat Produk</a>
-                        <a href="{{ route('home') }}" class="inline-flex items-center justify-center h-11 px-6 rounded-2xl border border-[#E8DDCF] bg-white text-slate-800 font-semibold">Kembali ke Home</a>
-                    </div>
+                    
+                    @if ($pending_order ?? null)
+                        <div class="mt-6 mx-auto max-w-sm rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left">
+                            <div class="text-xs font-semibold text-amber-900">Pesanan Belum Dibayar</div>
+                            <div class="mt-1 text-amber-800 text-sm">
+                                Pesananmu <strong>{{ $pending_order->code }}</strong> sedang menunggu pembayaran.
+                            </div>
+                            <div class="mt-3 flex gap-2">
+                                <a href="{{ route('storefront.pay', ['code' => $pending_order->code]) }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[#556B55] text-white text-xs font-bold hover:bg-[#4B5F4B]">
+                                    Bayar Sekarang
+                                </a>
+                                <a href="{{ route('storefront.my-orders') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-amber-200 bg-white text-amber-800 text-xs font-semibold hover:bg-amber-100">
+                                    Lihat Pesanan
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                            <a href="{{ route('storefront.products') }}" class="inline-flex items-center justify-center h-11 px-6 rounded-2xl bg-[#556B55] text-white font-semibold">Lihat Produk</a>
+                            <a href="{{ route('home') }}" class="inline-flex items-center justify-center h-11 px-6 rounded-2xl border border-[#E8DDCF] bg-white text-slate-800 font-semibold">Kembali ke Home</a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </section>
@@ -96,6 +114,17 @@
 
                     const grand = document.querySelector('[data-tf-summary-grand]');
                     if (grand && data.grand_total_formatted) grand.textContent = String(data.grand_total_formatted);
+
+                    const shipping = document.querySelector('[data-tf-summary-shipping]');
+                    if (shipping && typeof data.shipping_cost !== 'undefined') {
+                        if (data.shipping_cost === 0) {
+                            shipping.textContent = 'GRATIS';
+                            shipping.className = 'text-emerald-700 font-semibold';
+                        } else {
+                            shipping.textContent = String(data.shipping_cost_formatted);
+                            shipping.className = 'font-semibold text-slate-900';
+                        }
+                    }
                 },
                 updateItem(id, qty, subtotalFormatted) {
                     const root = document.querySelector('[data-tf-cart-item=\'' + String(id) + '\']');
@@ -214,13 +243,20 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <span class="text-slate-600">Estimasi Ongkir</span>
-                                    <span class="text-emerald-700 font-semibold">GRATIS</span>
+                                    <span data-tf-summary-shipping class="{{ ($shipping_cost ?? 0) === 0 ? 'text-emerald-700 font-semibold' : 'font-semibold text-slate-900' }}">
+                                        {{ ($shipping_cost ?? 0) === 0 ? 'GRATIS' : ($shipping_cost_formatted ?? 'Rp 15.000') }}
+                                    </span>
                                 </div>
+                                @if (($shipping_cost ?? 0) > 0)
+                                    <div class="text-[10px] text-slate-500 text-right mt-[-8px]">
+                                        Gratis ongkir min. Rp {{ number_format($free_shipping_threshold ?? 150000, 0, ',', '.') }}
+                                    </div>
+                                @endif
                             </div>
 
                             <div class="mt-5 pt-4 border-t border-[#E8DDCF] flex items-end justify-between">
                                 <div class="text-sm font-semibold text-slate-700">Total</div>
-                                <div data-tf-summary-grand class="text-xl font-bold text-[#29412E]">{{ $formatRupiah($total) }}</div>
+                                <div data-tf-summary-grand class="text-xl font-bold text-[#29412E]">{{ $grand_total_formatted ?? $formatRupiah($total) }}</div>
                             </div>
 
                             <div class="mt-5">

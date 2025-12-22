@@ -107,13 +107,53 @@
                                     </div>
                                     <div class="flex items-center justify-between">
                                         <span class="text-slate-600">Ongkir</span>
-                                        <span class="font-semibold text-emerald-700">GRATIS</span>
+                                        @if (($order['shipping_cost'] ?? 0) > 0)
+                                            <span class="font-semibold text-slate-900">Rp {{ number_format($order['shipping_cost'], 0, ',', '.') }}</span>
+                                        @else
+                                            <span class="font-semibold text-emerald-700">GRATIS</span>
+                                        @endif
                                     </div>
 
                                     <div class="pt-4 mt-4 border-t border-[#E8DDCF] flex items-end justify-between">
                                         <span class="text-sm font-semibold text-slate-700">Total</span>
                                         <span class="text-xl font-bold text-[#29412E]">{{ $totals['grand_total_formatted'] ?? '-' }}</span>
                                     </div>
+
+                                    {{-- Payment Info --}}
+                                    @if (($order['payment_status'] ?? '') === 'paid')
+                                        @php
+                                            $method = $order['payment_method'] ?? '';
+                                            if (str_starts_with($method, 'bank_transfer_')) {
+                                                $methodDisplay = 'VA ' . strtoupper(str_replace('bank_transfer_', '', $method));
+                                            } elseif ($method === 'qris') {
+                                                $methodDisplay = 'QRIS';
+                                            } else {
+                                                $methodDisplay = $method ?: '-';
+                                            }
+                                        @endphp
+                                        <div class="mt-5 rounded-2xl bg-emerald-50 border border-emerald-100 p-5">
+                                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                                                <div style="width: 28px; height: 28px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="3">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                </div>
+                                                <span style="font-weight: 700; color: #047857;">Telah Dibayar</span>
+                                            </div>
+                                            <div class="space-y-3 text-sm">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-slate-500">Metode</span>
+                                                    <span class="font-semibold text-slate-900">{{ $methodDisplay }}</span>
+                                                </div>
+                                                @if ($order['paid_at'] ?? null)
+                                                    <div class="flex items-center justify-between">
+                                                        <span class="text-slate-500">Waktu</span>
+                                                        <span class="font-semibold text-slate-900">{{ $order['paid_at'] }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
 
                                     <div class="pt-5 flex flex-col sm:flex-row gap-3">
                                         @if ($isWaitingPayment)

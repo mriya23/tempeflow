@@ -27,7 +27,7 @@ Terima kasih! Pembayaran untuk pesanan Anda telah berhasil dikonfirmasi. Pesanan
 
 <x-mail::panel>
 **Subtotal:** {{ $subtotal }}
-**Ongkos Kirim:** GRATIS
+**Ongkos Kirim:** {{ $shippingCostFormatted }}
 **Total Dibayar:** **{{ $grandTotal }}**
 </x-mail::panel>
 

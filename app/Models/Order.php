@@ -25,10 +25,13 @@ class Order extends Model
         'discount',
         'grand_total',
         'payment_provider',
+        'payment_method',
         'payment_status',
         'snap_token',
         'midtrans_transaction_id',
         'paid_at',
+        'shipping_cost',
+        'resi',
     ];
 
     protected $casts = [

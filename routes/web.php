@@ -24,6 +24,7 @@ Route::post('/checkout', [StorefrontController::class, 'checkout'])->name('store
 Route::get('/bayar/{code}', [StorefrontController::class, 'pay'])->middleware(['auth'])->name('storefront.pay');
 Route::get('/checkout/sukses/{code}', [StorefrontController::class, 'checkoutSuccess'])->name('storefront.checkout.success');
 Route::get('/checkout/status/{code}', [StorefrontController::class, 'checkoutStatus'])->middleware(['auth'])->name('storefront.checkout.status');
+Route::post('/checkout/charge/{code}', [StorefrontController::class, 'chargePayment'])->middleware(['auth'])->name('storefront.checkout.charge');
 
 Route::post('/midtrans/notification', [MidtransWebhookController::class, 'handle'])->name('midtrans.notification');
 

@@ -75,7 +75,8 @@
                                 @php
                                     $rowStatus = trim((string) ($o->status ?? ''));
                                     $rowPaymentStatus = trim((string) ($o->payment_status ?? ''));
-                                    $rowCanPay = ($rowStatus === 'Menunggu Pembayaran' || $rowPaymentStatus === 'pending');
+                                    // Button Bayar shows ONLY if status is 'Menunggu Pembayaran'
+                                    $rowCanPay = ($rowStatus === 'Menunggu Pembayaran');
                                     $rowCanCancel = ($rowStatus === 'Menunggu Pembayaran');
                                 @endphp
 

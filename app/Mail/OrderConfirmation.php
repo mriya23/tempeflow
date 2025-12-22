@@ -43,6 +43,8 @@ class OrderConfirmation extends Mailable
      */
     public function content(): Content
     {
+        $shippingCost = (int) $this->order->shipping_cost;
+        
         return new Content(
             markdown: 'emails.order-confirmation',
             with: [
@@ -52,6 +54,8 @@ class OrderConfirmation extends Mailable
                 'orderDate' => $this->order->created_at?->format('d M Y, H:i'),
                 'items' => $this->order->items,
                 'subtotal' => $this->formatRupiah((int) $this->order->subtotal),
+                'shippingCost' => $shippingCost,
+                'shippingCostFormatted' => $shippingCost > 0 ? $this->formatRupiah($shippingCost) : 'GRATIS',
                 'grandTotal' => $this->formatRupiah((int) $this->order->grand_total),
                 'recipientName' => $this->order->recipient_name,
                 'recipientPhone' => $this->order->recipient_phone,

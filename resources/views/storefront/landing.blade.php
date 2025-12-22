@@ -4,10 +4,7 @@
     <section class="max-w-6xl mx-auto px-4 pt-10 pb-14">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <div class="tf-animate-fade-up">
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 border border-[#E8DDCF] text-xs text-slate-700 tf-animate-fade-up tf-delay-100">
-                    <span class="h-2 w-2 rounded-full bg-[#556B55]"></span>
-                    <span>Platform B2B Tempe Terpercaya</span>
-                </div>
+
 
                 <h1 class="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 tf-animate-fade-up tf-delay-200">
                     Tempe Berkualitas Premium

@@ -9,6 +9,7 @@ class OrderPresenter
 {
     public function formatRupiah(int $amount): string
     {
+        // Format rupiah
         return 'Rp '.number_format($amount, 0, ',', '.');
     }
 
@@ -27,13 +28,18 @@ class OrderPresenter
             $total += ($price * $qty);
         }
 
+        $shippingCost = $total >= 150000 ? 0 : 15000;
+        $grandTotal = $total + $shippingCost;
+
         return [
             'items_count' => count($cart),
             'cart_count' => array_sum($cart),
             'total' => $total,
             'total_formatted' => $this->formatRupiah($total),
-            'grand_total' => $total,
-            'grand_total_formatted' => $this->formatRupiah($total),
+            'shipping_cost' => $shippingCost,
+            'shipping_cost_formatted' => $this->formatRupiah($shippingCost),
+            'grand_total' => $grandTotal,
+            'grand_total_formatted' => $this->formatRupiah($grandTotal),
         ];
     }
 
@@ -53,13 +59,17 @@ class OrderPresenter
         return [
             'code' => (string) $order->code,
             'status' => (string) $order->status,
-            'created_at' => $order->created_at ? $order->created_at->toDateTimeString() : null,
+            'shipping_cost' => (int) $order->shipping_cost,
+            'created_at' => $order->created_at ? $order->created_at->format('d M Y H:i') : null,
             'recipient_name' => (string) ($order->recipient_name ?? ''),
             'recipient_phone' => (string) ($order->recipient_phone ?? ''),
             'shipping_address' => (string) ($order->shipping_address ?? ''),
             'shipping_city' => (string) ($order->shipping_city ?? ''),
             'shipping_postal_code' => (string) ($order->shipping_postal_code ?? ''),
             'shipping_note' => (string) ($order->shipping_note ?? ''),
+            'payment_method' => (string) ($order->payment_method ?? ''),
+            'payment_status' => (string) ($order->payment_status ?? ''),
+            'paid_at' => $order->paid_at ? (is_string($order->paid_at) ? $order->paid_at : $order->paid_at->format('d M Y H:i')) : null,
             'items' => $items,
             'totals' => [
                 'total' => (int) $order->subtotal,

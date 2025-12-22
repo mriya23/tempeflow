@@ -45,10 +45,17 @@ class MidtransWebhookController extends Controller
             return response()->json(['message' => 'Invalid signature'], 401);
         }
 
-        $order = Order::query()->where('code', $orderId)->first();
+        // Extract base order code (remove suffix like -abc123)
+        $orderCode = $orderId;
+        if (preg_match('/^(TF-[A-Z0-9]+)-[a-z0-9]+$/', $orderId, $matches)) {
+            $orderCode = $matches[1];
+        }
+
+        $order = Order::query()->where('code', $orderCode)->first();
         if (!$order) {
             Log::info('midtrans.notification.order_not_found', [
                 'order_id' => $orderId,
+                'order_code' => $orderCode,
             ]);
             return response()->json(['message' => 'Order not found'], 200);
         }
