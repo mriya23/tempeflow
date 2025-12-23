@@ -6,7 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'Tempe Jaya Mandiri') }} - Admin</title>
-        <link rel="icon" href="{{ asset('images/vector_tempe.png') }}">
+        <link rel="icon" href="{{ asset('images/favicon_tjm.png') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
