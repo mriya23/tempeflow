@@ -67,6 +67,16 @@
         color: var(--color-text-primary);
     }
 
+    .admin-btn-danger {
+        background: #fff;
+        color: #DC2626;
+        border: 1px solid #FECACA;
+    }
+    .admin-btn-danger:hover {
+        background: #FEF2F2;
+        border-color: #F87171;
+    }
+
     .admin-input {
         height: 40px;
         border: 1px solid var(--color-border);
@@ -302,6 +312,15 @@
             <p class="admin-subtitle">Kelola katalog produk tokomu</p>
         </div>
 
+        <div class="flex-shrink-0">
+            <a href="{{ route('admin.products.create') }}" class="admin-btn admin-btn-primary w-full sm:w-auto">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4v16m8-8H4" />
+                </svg>
+                Tambah Produk
+            </a>
+        </div>
+
 
     </div>
 
@@ -367,7 +386,7 @@
                         <th>Info Produk</th>
                         <th style="width: 170px;">Harga</th>
                         <th style="width: 140px;">Status</th>
-                        <th style="width: 120px; text-align: right;">Aksi</th>
+                        <th style="width: 140px; text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -412,11 +431,18 @@
                                 @endif
                             </td>
 
-                            <td style="text-align: right;">
-                                <div class="row-actions">
+                            <td style="text-align: center;">
+                                <div class="row-actions flex justify-center gap-2">
                                     <a href="{{ route('admin.products.edit', $product) }}" class="admin-btn admin-btn-secondary" style="height: 36px; padding: 0 12px;">
                                         Edit
                                     </a>
+                                    <form action="{{ route('admin.products.destroy', $product) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?');" style="display: inline-block;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="admin-btn admin-btn-danger" style="height: 36px; padding: 0 12px;">
+                                            Hapus
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

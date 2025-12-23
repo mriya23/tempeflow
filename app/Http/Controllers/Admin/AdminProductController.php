@@ -44,7 +44,7 @@ class AdminProductController extends Controller
             'price' => 'required|numeric|min:0',
             'desc' => 'required|string',
             'tag' => 'nullable|string|max:50',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'required|image|max:2048',
             'is_active' => 'boolean',
         ]);
 
@@ -97,14 +97,21 @@ class AdminProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if ($product->img_path) {
-            $oldPath = str_replace('storage/', '', $product->img_path);
-            Storage::disk('public')->delete($oldPath);
+        try {
+            // Note: Image files are not automatically deleted because hosting 
+            // doesn't have the PHP fileinfo extension enabled.
+            // Clean up files manually via cPanel File Manager if needed.
+            
+            $product->delete();
+
+            return redirect()->route('admin.products.index')
+                ->with('success', 'Produk berhasil dihapus');
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('admin.products.index')
+                ->with('error', 'Produk tidak dapat dihapus karena sudah pernah dipesan.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.products.index')
+                ->with('error', 'Gagal menghapus produk.');
         }
-
-        $product->delete();
-
-        return redirect()->route('admin.products.index')
-            ->with('success', 'Produk berhasil dihapus');
     }
 }

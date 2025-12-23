@@ -49,20 +49,20 @@
 
         <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             @foreach ($products as $product)
-                <div class="rounded-3xl border border-[#E8DDCF] bg-white shadow-sm overflow-hidden">
+                <div class="rounded-3xl border border-[#E8DDCF] bg-white shadow-sm overflow-hidden flex flex-col h-full">
 
-                    <div class="relative overflow-hidden">
+                    <div class="relative overflow-hidden shrink-0">
                         <img class="w-full h-44 object-cover" src="{{ $product['img'] }}" alt="{{ $product['title'] }}" />
                         <div class="absolute left-3 top-3 flex items-center gap-2">
                             <span class="inline-flex items-center h-6 px-3 rounded-full bg-black/40 text-white text-[11px]">{{ $product['tag'] }}</span>
                         </div>
                     </div>
 
-                    <div class="p-4">
-                        <div class="font-semibold text-sm text-slate-900 leading-snug">{{ $product['title'] }}</div>
-                        <div class="mt-1 text-xs text-slate-500 leading-relaxed">{{ $product['desc'] }}</div>
+                    <div class="p-4 flex flex-col flex-1">
+                        <div class="font-semibold text-sm text-slate-900 leading-snug line-clamp-2 mb-1 h-10">{{ $product['title'] }}</div>
+                        <div class="text-xs text-slate-500 leading-relaxed line-clamp-2 h-10 overflow-hidden">{{ $product['desc'] }}</div>
 
-                        <div class="mt-3 flex items-end justify-between">
+                        <div class="mt-auto pt-4 flex items-end justify-between">
                             <div>
                                 <div class="text-xs text-slate-500">Harga</div>
                                 <div class="text-sm font-bold text-slate-900">{{ $formatRupiah((int) ($product['price'] ?? 0)) }}</div>
@@ -75,10 +75,20 @@
                                 >
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $product['id'] }}" />
-                                    <button type="submit" class="inline-flex items-center justify-center h-9 px-3 rounded-2xl bg-[#556B55] text-white text-xs font-semibold">+ Keranjang</button>
+                                    <button type="submit" class="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-2xl bg-[#556B55] hover:bg-[#4a5e4a] text-white text-xs font-semibold transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                        <span>Keranjang</span>
+                                    </button>
                                 </form>
                             @else
-                                <button type="button" @click="loginToast = true; setTimeout(() => loginToast = false, 3500)" class="inline-flex items-center justify-center h-9 px-3 rounded-2xl bg-[#556B55] text-white text-xs font-semibold">+ Keranjang</button>
+                                <button type="button" @click="loginToast = true; setTimeout(() => loginToast = false, 3500)" class="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-2xl bg-[#556B55] hover:bg-[#4a5e4a] text-white text-xs font-semibold transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span>Keranjang</span>
+                                </button>
                             @endauth
                         </div>
                     </div>

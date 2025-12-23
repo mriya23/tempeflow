@@ -184,6 +184,7 @@
         line-height: 1.1;
         color: var(--color-text-primary);
         letter-spacing: -0.01em;
+        white-space: nowrap;
     }
     .kpi .label {
         font-size: 12px;
@@ -194,6 +195,7 @@
         margin-top: 10px;
         font-size: 12px;
         color: var(--color-text-muted);
+        white-space: nowrap;
     }
     .kpi .icon {
         width: 40px;
